@@ -10,9 +10,9 @@ import json
 import sys, os
 
 # Windows
-path = os.path.dirname(os.path.abspath(__file__)) + "\\Auto-WPeGPT_XueyueThirty\\"
+path = os.path.dirname(os.path.abspath(__file__)) + "\\Auto-WPeGPT_WPeace\\"
 # MacOS
-#path = os.path.dirname(os.path.abspath(__file__)) + "/Auto-WPeGPT_XueyueThirty/"
+#path = os.path.dirname(os.path.abspath(__file__)) + "/Auto-WPeGPT_WPeace/"
 sys.path.append(path)
 import Auto_WPeGPT
 from openai import OpenAI
