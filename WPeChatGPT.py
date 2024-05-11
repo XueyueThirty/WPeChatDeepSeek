@@ -10,23 +10,23 @@ import json
 import sys, os
 
 # Windows
-path = os.path.dirname(os.path.abspath(__file__)) + "\\Auto-WPeGPT_WPeace\\"
+path = os.path.dirname(os.path.abspath(__file__)) + "\\Auto-WPeGPT_XueyueThirty\\"
 # MacOS
-#path = os.path.dirname(os.path.abspath(__file__)) + "/Auto-WPeGPT_WPeace/"
+#path = os.path.dirname(os.path.abspath(__file__)) + "/Auto-WPeGPT_XueyueThirty/"
 sys.path.append(path)
 import Auto_WPeGPT
-
+from openai import OpenAI
 # Whether to use Chinese explanation code.
 ZH_CN = True
 # Set your API key here, or put in in the OPENAI_API_KEY environment variable.
-openai.api_key = "ENTER_OPEN_API_KEY_HERE"
 # Set your own proxy if necessary. (e.g. Clash)
 #print("WPeChatGPT has appointed the proxy.")
 #proxies = {'http': "http://127.0.0.1:7890", 'https': "http://127.0.0.1:7890"}
 #openai.proxy = proxies
 # Set reverse proxy URL if you need. (e.g. Azure)
-#openai.api_base = "base_url"
+#openai.api_base = "https://api.deepseek.com"
 
+client = OpenAI(api_key="<deepseek api key>", base_url="https://api.deepseek.com")
 
 # WPeChatGPT 分析解释函数
 class ExplainHandler(idaapi.action_handler_t):
@@ -37,9 +37,9 @@ class ExplainHandler(idaapi.action_handler_t):
         funcComment = getFuncComment(idaapi.get_screen_ea())
         if "---GPT_START---" in funcComment:
             if ZH_CN:
-                print("当前函数已经完成过 WPeChatGPT:Explain 分析，请查看注释或删除注释重新分析。@WPeace")
+                print("当前函数已经完成过 WPeChatGPT:Explain 分析，请查看注释或删除注释重新分析。@XueyueThirty")
             else:
-                print("The current function has been analyzed by WPeChatGPT:Explain, please check the comment or delete the comment to re-analyze. @WPeace")
+                print("The current function has been analyzed by WPeChatGPT:Explain, please check the comment or delete the comment to re-analyze. @XueyueThirty")
             return 0
         decompiler_output = ida_hexrays.decompile(idaapi.get_screen_ea())
         v = ida_hexrays.get_widget_vdui(ctx.widget)
@@ -91,9 +91,9 @@ class PythonHandler(idaapi.action_handler_t):
         addrComment = getAddrComment(lastAddr)
         if "---GPT_Python_START---" in str(addrComment):
             if ZH_CN:
-                print("当前函数已经完成过 WPeChatGPT:Python 分析，请查看注释或删除注释重新分析。@WPeace")
+                print("当前函数已经完成过 WPeChatGPT:Python 分析，请查看注释或删除注释重新分析。@XueyueThirty")
             else:
-                print("The current function has been analyzed by WPeChatGPT:Python, please check the comment or delete the comment to re-analyze. @WPeace")
+                print("The current function has been analyzed by WPeChatGPT:Python, please check the comment or delete the comment to re-analyze. @XueyueThirty")
             return 0
         decompiler_output = ida_hexrays.decompile(idaapi.get_screen_ea())
         v = ida_hexrays.get_widget_vdui(ctx.widget)
@@ -124,9 +124,9 @@ class FindVulnHandler(idaapi.action_handler_t):
         funcComment = getFuncComment(idaapi.get_screen_ea())
         if "---GPT_VulnFinder_START---" in funcComment:
             if ZH_CN:
-                print("当前函数已经完成过 WPeChatGPT:VulnFinder 分析，请查看注释或删除注释重新分析。@WPeace")
+                print("当前函数已经完成过 WPeChatGPT:VulnFinder 分析，请查看注释或删除注释重新分析。@XueyueThirty")
             else:
-                print("The current function has been analyzed by WPeChatGPT:VulnFinder, please check the comment or delete the comment to re-analyze. @WPeace")
+                print("The current function has been analyzed by WPeChatGPT:VulnFinder, please check the comment or delete the comment to re-analyze. @XueyueThirty")
             return 0
         decompiler_output = ida_hexrays.decompile(idaapi.get_screen_ea())
         v = ida_hexrays.get_widget_vdui(ctx.widget)
@@ -157,9 +157,9 @@ class expCreateHandler(idaapi.action_handler_t):
         funcComment = getFuncComment(idaapi.get_screen_ea())
         if "---GPT_VulnPython_START---" in funcComment:
             if ZH_CN:
-                print("当前函数已经完成过 WPeChatGPT:ExpCreater 分析，请查看注释或删除注释重新分析。@WPeace")
+                print("当前函数已经完成过 WPeChatGPT:ExpCreater 分析，请查看注释或删除注释重新分析。@XueyueThirty")
             else:
-                print("The current function has been analyzed by WPeChatGPT:ExpCreater, please check the comment or delete the comment to re-analyze. @WPeace")
+                print("The current function has been analyzed by WPeChatGPT:ExpCreater, please check the comment or delete the comment to re-analyze. @XueyueThirty")
             return 0
         decompiler_output = ida_hexrays.decompile(idaapi.get_screen_ea())
         v = ida_hexrays.get_widget_vdui(ctx.widget)
@@ -193,7 +193,7 @@ def autoChatFunc(funcTree:str, strings:str, callback):
     else:
         messages.append({"role": "user", "content": "Combining the function call structure of the program and the strings it contains, guess its purpose and function."})
         messages.append({"role": "user", "content": "Please tell me the purpose and general function of the program after careful analysis."})
-    t = threading.Thread(target=chat_api_worker, args=(messages, "gpt-3.5-turbo", callback))
+    t = threading.Thread(target=chat_api_worker, args=(messages, "deepseek-chat", callback))
     t.start()
 
 
@@ -202,10 +202,10 @@ def chat_api_worker(messages, model, callback):
         response = openai.ChatCompletion.create(messages=messages, model=model)
     except Exception as e:
         if "maximum context length" in str(e):
-            print("此二进制文件的分析数据超过了 GPT-3.5-API 的最大长度！请期待后续版本 :)@WPeace")
+            print("此二进制文件的分析数据超过了 GPT-3.5-API 的最大长度！请期待后续版本 :)@XueyueThirty")
             return 0
         elif "Cannot connect to proxy" in str(e):
-            print("代理出现问题，请稍后重试或检查代理。@WPeace")
+            print("代理出现问题，请稍后重试或检查代理。@XueyueThirty")
             return 0
         else:
             print(f"General exception encountered while running the query: {str(e)}")
@@ -222,7 +222,7 @@ def handle_response(autoGptfolder, response):
     fp = open(autoGptfolder + "GPT-Result.txt", "w")
     fp.write(message.content)
     fp.close()
-    print("Auto-WPeGPT finished! :)@WPeace\n")
+    print("Auto-WPeGPT finished! :)@XueyueThirty\n")
 
 
 # Auto-WPeGPT 自动化分析
@@ -263,40 +263,44 @@ class autoHandler(idaapi.action_handler_t):
 
 
 # Gepetto query_model Method
-def query_model(query, cb, max_tokens=2500):
+def query_model(query, cb, max_tokens=1024):
     """
-    向 gpt-3.5-turbo 发送查询的函数。
-    :param query: The request to send to gpt-3.5-turbo
+    向 deepseek-chat 发送查询的函数。
+    :param query: The request to send to deepseek-chat
     :param cb: Tu function to which the response will be passed to.
     """
     try:
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+        response = client.chat.completions.create(
+            model="deepseek-chat",
             messages=[
+                {"role": "system", "content": "You are a helpful assistant"},
                 {"role": "user", "content": query}
-            ]
+            ],
+              temperature=0.7,
+              stream=False
+
         )
-        ida_kernwin.execute_sync(functools.partial(cb, response=response.choices[0]["message"]["content"]), ida_kernwin.MFF_WRITE)
+        ida_kernwin.execute_sync(functools.partial(cb, response=response.choices[0].message.content), ida_kernwin.MFF_WRITE)
     except openai.InvalidRequestError as e:
         # Context length exceeded. Determine the max number of tokens we can ask for and retry.
         m = re.search(r'maximum context length is (\d+) tokens, however you requested \d+ tokens \((\d+) in your '
                       r'prompt;', str(e))
         if not m:
-            print(f"gpt-3.5-turbo could not complete the request: {str(e)}")
+            print(f"deepseek-chat could not complete the request: {str(e)}")
             return
         (hard_limit, prompt_tokens) = (int(m.group(1)), int(m.group(2)))
         max_tokens = hard_limit - prompt_tokens
         if max_tokens >= 750:
             print(f"WPeChatGPT-Warning: Context length too long! Try reducing tokens to {max_tokens}...")
-            print("Request to gpt-3.5-turbo sent retried...")
+            print("Request to deepseek-chat sent retried...")
             query_model(query, cb, max_tokens)
         else:
-            print("Unfortunately, this function is too large to be analyzed using ChatGPT-gpt-3.5-turbo API. @WPeace")
+            print("Unfortunately, this function is too large to be analyzed using ChatGPT-deepseek-chat API. @XueyueThirty")
     except openai.OpenAIError as e:
         if "That model is currently overloaded with other requests" in str(e) or "Request timed out" in str(e):
-            print("ChatGPT-gpt-3.5-turbo API 繁忙，请稍后重试或检查代理。@WPeace")
+            print("ChatGPT-deepseek-chat API 繁忙，请稍后重试或检查代理。@XueyueThirty")
         elif "Cannot connect to proxy" in str(e):
-            print("代理出现问题，请稍后重试或检查代理。@WPeace")
+            print("代理出现问题，请稍后重试或检查代理。@XueyueThirty")
         else:
             print(f"OpenAI server could not complete the request: {str(e)}")
     except Exception as e:
@@ -307,21 +311,21 @@ def query_model(query, cb, max_tokens=2500):
 def query_model_async(query, cb, time):
     """
     创建线程调用 query_model 函数。
-    :param query: The request to send to gpt-3.5-turbo
+    :param query: The request to send to deepseek-chat
     :param cb: Tu function to which the response will be passed to.
     :param time: whether it is a retry.
     """
     if time == 0:
         if ZH_CN:
-            print("正在发送 ChatGPT-gpt-3.5-turbo API 请求，完成后将输出提示。@WPeace")
+            print("正在发送 ChatGPT-deepseek-chat API 请求，完成后将输出提示。@XueyueThirty")
         else:
-            print("Sending ChatGPT-gpt-3.5-turbo API request, will output a prompt when completed. @WPeace")
-        print("Request to gpt-3.5-turbo sent...")
+            print("Sending ChatGPT-deepseek-chat API request, will output a prompt when completed. @XueyueThirty")
+        print("Request to deepseek-chat sent...")
     else:
         if ZH_CN:
-            print("正在重新发送 ChatGPT-gpt-3.5-turbo API 请求。@WPeace")
+            print("正在重新发送 ChatGPT-deepseek-chat API 请求。@XueyueThirty")
         else:
-            print("Resending ChatGPT-gpt-3.5-turbo API request. @WPeace")
+            print("Resending ChatGPT-deepseek-chat API request. @XueyueThirty")
     t = threading.Thread(target=query_model, args=[query, cb])
     t.start()
 
@@ -343,27 +347,27 @@ def comment_callback(address, view, response, cmtFlag, printFlag):
     # Refresh the window so the comment is displayed properly
     if view:
         view.refresh_view(False)
-    print("gpt-3.5-turbo query finished!")
+    print("deepseek-chat query finished!")
     if printFlag == 0:
         if ZH_CN:
-            print("WPeChatGPT:Explain 完成分析，已对函数 %s 进行注释。@WPeace" %idc.get_func_name(address))
+            print("WPeChatGPT:Explain 完成分析，已对函数 %s 进行注释。@XueyueThirty" %idc.get_func_name(address))
         else:
-            print("WPeChatGPT:Explain finished analyzing, function %s has been commented. @WPeace" %idc.get_func_name(address))
+            print("WPeChatGPT:Explain finished analyzing, function %s has been commented. @XueyueThirty" %idc.get_func_name(address))
     elif printFlag == 1:
         if ZH_CN:
-            print("WPeChatGPT:Python 完成分析，已在函数末尾地址 %s 汇编处进行注释。@WPeace" %hex(address))
+            print("WPeChatGPT:Python 完成分析，已在函数末尾地址 %s 汇编处进行注释。@XueyueThirty" %hex(address))
         else:
-            print("WPeChatGPT:Python finished parsing, commented at assembly at address %s at end of function. @WPeace" %hex(address))
+            print("WPeChatGPT:Python finished parsing, commented at assembly at address %s at end of function. @XueyueThirty" %hex(address))
     elif printFlag == 2:
         if ZH_CN:
-            print("WPeChatGPT:VulnFinder 完成分析，已对函数 %s 进行注释。@WPeace" %idc.get_func_name(address))
+            print("WPeChatGPT:VulnFinder 完成分析，已对函数 %s 进行注释。@XueyueThirty" %idc.get_func_name(address))
         else:
-            print("WPeChatGPT: VulnFinder finished analyzing, function %s has been annotated. @WPeace" %idc.get_func_name(address))
+            print("WPeChatGPT: VulnFinder finished analyzing, function %s has been annotated. @XueyueThirty" %idc.get_func_name(address))
     elif printFlag == 3:
         if ZH_CN:
-            print("WPeChatGPT:ExpCreater 完成分析，已对函数 %s 进行注释。@WPeace" %idc.get_func_name(address))
+            print("WPeChatGPT:ExpCreater 完成分析，已对函数 %s 进行注释。@XueyueThirty" %idc.get_func_name(address))
         else:
-            print("WPeChatGPT:ExpCreater finished analyzing, commented on function %s. @WPeace" %idc.get_func_name(address))
+            print("WPeChatGPT:ExpCreater finished analyzing, commented on function %s. @XueyueThirty" %idc.get_func_name(address))
 
 
 # Gepetto rename_callback Method
@@ -372,13 +376,13 @@ def rename_callback(address, view, response, retries=0):
     重命名函数变量的回调函数。
     :param address: The address of the function to work on
     :param view: A handle to the decompiler window
-    :param response: The response from gpt-3.5-turbo
+    :param response: The response from deepseek-chat
     :param retries: The number of times that we received invalid JSON
     """
     j = re.search(r"\{[^}]*?\}", response)
     if not j:
         if retries >= 3:  # Give up obtaining the JSON after 3 times.
-            print("ChatGPT-gpt-3.5-turbo API has no valid response, please try again later. @WPeace")
+            print("ChatGPT-deepseek-chat API has no valid response, please try again later. @XueyueThirty")
             return
         print(f"Cannot extract valid JSON from the response. Asking the model to fix it...")
         query_model_async("The JSON document provided in this response is invalid. Can you fix it?\n" + response,
@@ -392,7 +396,7 @@ def rename_callback(address, view, response, retries=0):
         names = json.loads(j.group(0))
     except json.decoder.JSONDecodeError:
         if retries >= 3:  # Give up fixing the JSON after 3 times.
-            print("ChatGPT-gpt-3.5-turbo API has no valid response, please try again later. @WPeace")
+            print("ChatGPT-deepseek-chat API has no valid response, please try again later. @XueyueThirty")
             return
         print(f"The JSON document returned is invalid. Asking the model to fix it...")
         query_model_async("Please fix the following JSON document:\n" + j.group(0),
@@ -418,11 +422,11 @@ def rename_callback(address, view, response, retries=0):
     # Refresh the window to show the new names
     if view:
         view.refresh_view(True)
-    print("gpt-3.5-turbo query finished!")
+    print("deepseek-chat query finished!")
     if ZH_CN:
-        print(f"WPeChatGPT:RenameVariable 完成分析，已重命名{len(replaced)}个变量。@WPeace")
+        print(f"WPeChatGPT:RenameVariable 完成分析，已重命名{len(replaced)}个变量。@XueyueThirty")
     else:
-        print(f"WPeChatGPT:RenameVariable Completed analysis, renamed {len(replaced)} variables. @WPeace")
+        print(f"WPeChatGPT:RenameVariable Completed analysis, renamed {len(replaced)} variables. @XueyueThirty")
 
 
 # 获取函数注释
@@ -467,7 +471,7 @@ class myplugin_WPeChatGPT(idaapi.plugin_t):
     wanted_name = 'WPeChatGPT'
     wanted_hotkey = ''
     comment = "WPeChatGPT Plugin for IDA"
-    help = "Find more information at https://github.com/wpeace-hch"
+    help = "Find more information at https://github.com/XueyueThirty-hch"
     menu = None
     flags = 0
     def init(self):
@@ -480,7 +484,7 @@ class myplugin_WPeChatGPT(idaapi.plugin_t):
                                                   '二进制文件自动化分析 v0.2',
                                                   autoHandler(),
                                                   "",
-                                                  '使用 gpt-3.5-turbo 对二进制文件进行自动化分析',
+                                                  '使用 deepseek-chat 对二进制文件进行自动化分析',
                                                   199)
             idaapi.register_action(autoWPeGPT_action)
             idaapi.attach_action_to_menu(self.autoWPeGPT_menu_path, self.autoWPeGPT_action_name, idaapi.SETMENU_APP)
@@ -489,7 +493,7 @@ class myplugin_WPeChatGPT(idaapi.plugin_t):
                                                   '函数分析',
                                                   ExplainHandler(),
                                                   "Ctrl+Alt+G",
-                                                  '使用 gpt-3.5-turbo 分析当前函数',
+                                                  '使用 deepseek-chat 分析当前函数',
                                                   199)
             idaapi.register_action(explain_action)
             idaapi.attach_action_to_menu(self.explain_menu_path, self.explain_action_name, idaapi.SETMENU_APP)
@@ -498,7 +502,7 @@ class myplugin_WPeChatGPT(idaapi.plugin_t):
                                                  '重命名函数变量',
                                                  RenameHandler(),
                                                  "Ctrl+Alt+R",
-                                                 "使用 gpt-3.5-turbo 重命名当前函数的变量",
+                                                 "使用 deepseek-chat 重命名当前函数的变量",
                                                  199)
             idaapi.register_action(rename_action)
             idaapi.attach_action_to_menu(self.rename_menu_path, self.rename_action_name, idaapi.SETMENU_APP)
@@ -507,7 +511,7 @@ class myplugin_WPeChatGPT(idaapi.plugin_t):
                                                  'Python还原此函数',
                                                  PythonHandler(),
                                                  "",
-                                                 "使用 gpt-3.5-turbo 分析当前函数并用python3还原",
+                                                 "使用 deepseek-chat 分析当前函数并用python3还原",
                                                  199)
             idaapi.register_action(python_action)
             idaapi.attach_action_to_menu(self.python_menu_path, self.python_action_name, idaapi.SETMENU_APP)
@@ -516,7 +520,7 @@ class myplugin_WPeChatGPT(idaapi.plugin_t):
                                                   '二进制漏洞查找',
                                                   FindVulnHandler(),
                                                   "Ctrl+Alt+E",
-                                                  '使用 gpt-3.5-turbo 在当前函数中查找漏洞',
+                                                  '使用 deepseek-chat 在当前函数中查找漏洞',
                                                   199)
             idaapi.register_action(vulnFinder_action)
             idaapi.attach_action_to_menu(self.vulnFinder_menu_path, self.vulnFinder_action_name, idaapi.SETMENU_APP)
@@ -525,7 +529,7 @@ class myplugin_WPeChatGPT(idaapi.plugin_t):
                                                   '尝试生成Exploit',
                                                   expCreateHandler(),
                                                   "",
-                                                  '使用 gpt-3.5-turbo 尝试对漏洞函数生成EXP',
+                                                  '使用 deepseek-chat 尝试对漏洞函数生成EXP',
                                                   199)
             idaapi.register_action(expPython_action)
             idaapi.attach_action_to_menu(self.expPython_menu_path, self.expPython_action_name, idaapi.SETMENU_APP)
@@ -533,14 +537,14 @@ class myplugin_WPeChatGPT(idaapi.plugin_t):
             self.menu = ContextMenuHooks()
             self.menu.hook()
             print("Auto-WPeGPT v0.2 is ready.")
-            print("WPeChatGPT v2.4 works fine! :)@WPeace\n")
+            print("WPeChatGPT v2.4 works fine! :)@XueyueThirty\n")
         else:
             # create Auto-WPeGPT action
             autoWPeGPT_action = idaapi.action_desc_t(self.autoWPeGPT_action_name,
                                                   'Automated analysis v0.2',
                                                   autoHandler(),
                                                   "",
-                                                  '使用 gpt-3.5-turbo 对二进制文件进行自动化分析',
+                                                  '使用 deepseek-chat 对二进制文件进行自动化分析',
                                                   199)
             idaapi.register_action(autoWPeGPT_action)
             idaapi.attach_action_to_menu(self.autoWPeGPT_menu_path, self.autoWPeGPT_action_name, idaapi.SETMENU_APP)
@@ -549,7 +553,7 @@ class myplugin_WPeChatGPT(idaapi.plugin_t):
                                                   'Function analysis',
                                                   ExplainHandler(),
                                                   "Ctrl+Alt+G",
-                                                  '使用 gpt-3.5-turbo 分析当前函数',
+                                                  '使用 deepseek-chat 分析当前函数',
                                                   199)
             idaapi.register_action(explain_action)
             idaapi.attach_action_to_menu(self.explain_menu_path, self.explain_action_name, idaapi.SETMENU_APP)
@@ -558,7 +562,7 @@ class myplugin_WPeChatGPT(idaapi.plugin_t):
                                                  'Rename function variables',
                                                  RenameHandler(),
                                                  "Ctrl+Alt+R",
-                                                 "使用 gpt-3.5-turbo 重命名当前函数的变量",
+                                                 "使用 deepseek-chat 重命名当前函数的变量",
                                                  199)
             idaapi.register_action(rename_action)
             idaapi.attach_action_to_menu(self.rename_menu_path, self.rename_action_name, idaapi.SETMENU_APP)
@@ -567,7 +571,7 @@ class myplugin_WPeChatGPT(idaapi.plugin_t):
                                                  'Python restores this function',
                                                  PythonHandler(),
                                                  "",
-                                                 "使用 gpt-3.5-turbo 分析当前函数并用python3还原",
+                                                 "使用 deepseek-chat 分析当前函数并用python3还原",
                                                  199)
             idaapi.register_action(python_action)
             idaapi.attach_action_to_menu(self.python_menu_path, self.python_action_name, idaapi.SETMENU_APP)
@@ -576,7 +580,7 @@ class myplugin_WPeChatGPT(idaapi.plugin_t):
                                                   'Vulnerability finding',
                                                   FindVulnHandler(),
                                                   "Ctrl+Alt+E",
-                                                  '使用 gpt-3.5-turbo 在当前函数中查找漏洞',
+                                                  '使用 deepseek-chat 在当前函数中查找漏洞',
                                                   199)
             idaapi.register_action(vulnFinder_action)
             idaapi.attach_action_to_menu(self.vulnFinder_menu_path, self.vulnFinder_action_name, idaapi.SETMENU_APP)
@@ -585,7 +589,7 @@ class myplugin_WPeChatGPT(idaapi.plugin_t):
                                                   'Try to generate Exploit',
                                                   expCreateHandler(),
                                                   "",
-                                                  '使用 gpt-3.5-turbo 尝试对漏洞函数生成EXP',
+                                                  '使用 deepseek-chat 尝试对漏洞函数生成EXP',
                                                   199)
             idaapi.register_action(expPython_action)
             idaapi.attach_action_to_menu(self.expPython_menu_path, self.expPython_action_name, idaapi.SETMENU_APP)
@@ -593,7 +597,7 @@ class myplugin_WPeChatGPT(idaapi.plugin_t):
             self.menu = ContextMenuHooks()
             self.menu.hook()
             print("Auto-WPeGPT v0.2 is ready.")
-            print("WPeChatGPT v2.4 works fine! :)@WPeace\n")
+            print("WPeChatGPT v2.4 works fine! :)@XueyueThirty\n")
         return idaapi.PLUGIN_KEEP
 
     def run(self, arg):
@@ -615,6 +619,6 @@ def PLUGIN_ENTRY():
     if openai.api_key == "ENTER_OPEN_API_KEY_HERE":
         openai.api_key = os.getenv("OPENAI_API_KEY")
         if not openai.api_key:
-            print("未找到 API_KEY，请在脚本中填写 openai.api_key! :(@WPeace")
+            print("未找到 API_KEY，请在脚本中填写 openai.api_key! :(@XueyueThirty")
             raise ValueError("No valid OpenAI API key found")
     return myplugin_WPeChatGPT()
