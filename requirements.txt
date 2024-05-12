@@ -1,2 +1,2 @@
-openai == 0.28
+openai
 anytree
